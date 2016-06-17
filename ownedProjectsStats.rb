@@ -13,6 +13,7 @@ ownerUrl = "https://api.github.com/user/repos"
 authenticationString = "#{username}:#{password}"
 projectsString = `curl -H "Accept: application/json" -X GET #{ownerUrl} -u #{authenticationString} --silent`
 
+#get all projects owned by the user
 projectsHash = JSON.parse(projectsString)
 projectContributions = Hash.new
 
@@ -22,6 +23,7 @@ total          = 0
 
 statsHash = Hash.new
 
+#iterate through all projects owned by the user
 projectsHash.each do |project|
 	projectName = project["name"]
 	statsUrl = "https://api.github.com/repos/#{username}/#{projectName}/stats/contributors"
@@ -31,23 +33,23 @@ projectsHash.each do |project|
 	
 	projectStatsHash = projectStats[0]
 
+	#only count additions and deletions made by the project owner
 	if projectStatsHash["author"]["login"] == "#{username}"
 		statsHash["#{projectName}"] = {"additions" => 0, "deletions" => 0, "subtotal" => 0}
-			
+		
+		#as far as I'm aware, project statistics are only given on a weekly basis - we need to sum the statistics for every week
 		weeklyContributions = projectStatsHash["weeks"]
 		weeklyContributions.each do |statisticsHash|
-			currentAdditions = statsHash["#{projectName}"]["additions"]
-			currentDeletions = statsHash["#{projectName}"]["deletions"]
-			statsHash["#{projectName}"]["additions"] = currentAdditions + statisticsHash["a"].to_i
-			statsHash["#{projectName}"]["deletions"] = currentDeletions + statisticsHash["d"].to_i
+			statsHash["#{projectName}"]["additions"] += statisticsHash["a"].to_i
+			statsHash["#{projectName}"]["deletions"] += statisticsHash["d"].to_i
 		end
 		subtotal = statsHash["#{projectName}"]["additions"] - statsHash["#{projectName}"]["deletions"]
 		statsHash["#{projectName}"]["subtotal"] = subtotal
 	end
 	
-	totalDeletions = totalDeletions + statsHash["#{projectName}"]["deletions"]
-	totalAdditions = totalAdditions + statsHash["#{projectName}"]["additions"]
-	total          = total          + statsHash["#{projectName}"]["subtotal"]
+	totalDeletions += statsHash["#{projectName}"]["deletions"]
+	totalAdditions += statsHash["#{projectName}"]["additions"]
+	total          += statsHash["#{projectName}"]["subtotal"]
 end
 
 statsHash["all projects"] = {"additions" => "#{totalAdditions}", "deletions" => "#{totalDeletions}", "subtotal" => "#{total}"}
@@ -62,6 +64,8 @@ statsHash.each do |projectName, stats|
 	puts "	Deletions  : #{deletions}"
 	puts "	Difference : #{difference}"
 end
+
+puts ""
 
 
 
