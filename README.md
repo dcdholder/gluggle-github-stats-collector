@@ -9,7 +9,7 @@ Will spit out per-project contribution statistics for the project owner (added l
 1. Clone the repo.
 2. Install ruby with 'apt-get install ruby-dev' if necessary.
 3. Install the json gem with 'gem install json'.
-4. Run with 'ruby <filename>.rb'
+4. Run with 'ruby filename.rb'
 
 Known Defects
 =============
