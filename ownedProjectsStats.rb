@@ -34,22 +34,25 @@ projectsHash.each do |project|
 	projectStatsHash = projectStats[0]
 
 	#only count additions and deletions made by the project owner
-	if projectStatsHash["author"]["login"] == "#{username}"
-		statsHash["#{projectName}"] = {"additions" => 0, "deletions" => 0, "subtotal" => 0}
+	if projectStatsHash!=nil
+		if projectStatsHash["author"]["login"] == "#{username}"
+			statsHash["#{projectName}"] = {"additions" => 0, "deletions" => 0, "subtotal" => 0}
 		
-		#as far as I'm aware, project statistics are only given on a weekly basis - we need to sum the statistics for every week
-		weeklyContributions = projectStatsHash["weeks"]
-		weeklyContributions.each do |statisticsHash|
-			statsHash["#{projectName}"]["additions"] += statisticsHash["a"].to_i
-			statsHash["#{projectName}"]["deletions"] += statisticsHash["d"].to_i
+			#as far as I'm aware, project statistics are only given on a weekly basis - we need to sum the statistics for every week
+			weeklyContributions = projectStatsHash["weeks"]
+			weeklyContributions.each do |statisticsHash|
+				statsHash["#{projectName}"]["additions"] += statisticsHash["a"].to_i
+				statsHash["#{projectName}"]["deletions"] += statisticsHash["d"].to_i
+			end
+			subtotal = statsHash["#{projectName}"]["additions"] - statsHash["#{projectName}"]["deletions"]
+			statsHash["#{projectName}"]["subtotal"] = subtotal
 		end
-		subtotal = statsHash["#{projectName}"]["additions"] - statsHash["#{projectName}"]["deletions"]
-		statsHash["#{projectName}"]["subtotal"] = subtotal
-	end
 	
-	totalDeletions += statsHash["#{projectName}"]["deletions"]
-	totalAdditions += statsHash["#{projectName}"]["additions"]
-	total          += statsHash["#{projectName}"]["subtotal"]
+	
+		totalDeletions += statsHash["#{projectName}"]["deletions"]
+		totalAdditions += statsHash["#{projectName}"]["additions"]
+		total          += statsHash["#{projectName}"]["subtotal"]
+	end
 end
 
 statsHash["all projects"] = {"additions" => "#{totalAdditions}", "deletions" => "#{totalDeletions}", "subtotal" => "#{total}"}
